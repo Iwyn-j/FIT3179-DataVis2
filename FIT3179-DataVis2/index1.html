@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Data Visualizations</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+
+    <div id="vis_temperature"></div>
+    <div id="vis_uv_index"></div>
+    <div id="vis_wind_temp"></div>
+    <div id="vis_air_quality"></div>
+    <div id="vis_humidity"></div>
+    <div id="vis_avg_temp"></div>
+    <div id="vis_moon_phase"></div>
+
+    <script>
+        // Define the URL of your data source
+        const dataSourceUrl = 'https://raw.githubusercontent.com/Iwyn-j/FIT3179/main/GlobalWeatherRepository.csv';
+
+        // Temperature Range by Country Visualization
+        var temperatureSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"url": dataSourceUrl},
+            "title": "Temperature Range by Country",
+            "mark": "bar",
+            // ... other specifications ...
+        };
+
+        // UV Index: Box Plot by Country Visualization
+        var uvIndexSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"url": dataSourceUrl},
+            "title": "UV Index: Box Plot by Country",
+            "mark": "boxplot",
+            // ... other specifications ...
+        };
+
+        // Wind Speed vs. Temperature Scatter Plot
+        var windTempSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"url": dataSourceUrl},
+            "title": "Wind Speed vs. Temperature Scatter Plot",
+            "mark": "point",
+            // ... other specifications ...
+        };
+
+        // Average Air Quality (PM2.5) by Country
+        var airQualitySpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"url": dataSourceUrl},
+            "title": "Average Air Quality (PM2.5) by Country",
+            "mark": "bar",
+            // ... other specifications ...
+        };
+
+        // Humidity Heatmap
+        var humiditySpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"url": dataSourceUrl},
+            "title": "Humidity Heatmap",
+            "mark": "rect",
+            // ... other specifications ...
+        };
+
+        // Monthly Average Temperature
+        var avgTempSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"url": dataSourceUrl},
+            "title": "Monthly Average Temperature",
+            "mark": "line",
+            // ... other specifications ...
+        };
+
+        // Moon Phase Distribution
+        var moonPhaseSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"url": dataSourceUrl},
+            "title": "Moon Phase Distribution",
+            "mark": "arc",
+            // ... other specifications ...
+        };
+
+        // Embed the visualizations in the document
+        vegaEmbed('#vis_temperature', temperatureSpec);
+        vegaEmbed('#vis_uv_index', uvIndexSpec);
+        vegaEmbed('#vis_wind_temp', windTempSpec);
+        vegaEmbed('#vis_air_quality', airQualitySpec);
+        vegaEmbed('#vis_humidity', humiditySpec);
+        vegaEmbed('#vis_avg_temp', avgTempSpec);
+        vegaEmbed('#vis_moon_phase', moonPhaseSpec);
+    </script>
+</body>
+</html>

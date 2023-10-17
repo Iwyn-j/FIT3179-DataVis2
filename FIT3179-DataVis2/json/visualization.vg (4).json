@@ -1,0 +1,148 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A bar chart that shows the average air quality (PM2.5) by country.",
+  "background": "white",
+  "padding": 5,
+  "height": 200,
+  "title": {
+    "text": "Average Air Quality (PM2.5) by Country",
+    "fontSize": 20,
+    "font": "Helvetica Neue",
+    "frame": "group"
+  },
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/Iwyn-j/FIT3179/main/GlobalWeatherRepository.csv",
+      "format": {"type": "csv", "delimiter": ","},
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": ["country"],
+          "ops": ["mean"],
+          "fields": ["air_quality_PM2\\.5"],
+          "as": ["avg_pm25"]
+        },
+        {
+          "type": "stack",
+          "groupby": ["country"],
+          "field": "avg_pm25",
+          "sort": {"field": ["avg_pm25"], "order": ["descending"]},
+          "as": ["avg_pm25_start", "avg_pm25_end"],
+          "offset": "zero"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"avg_pm25\"]) && isFinite(+datum[\"avg_pm25\"])"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {"name": "x_step", "value": 20},
+    {
+      "name": "width",
+      "update": "bandspace(domain('x').length, 0.1, 0.05) * x_step"
+    }
+  ],
+  "marks": [
+    {
+      "name": "marks",
+      "type": "rect",
+      "style": ["bar"],
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "fill": {"scale": "color", "field": "avg_pm25"},
+          "ariaRoleDescription": {"value": "bar"},
+          "description": {
+            "signal": "\"country: \" + (isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]) + \"; avg_pm25: \" + (format(datum[\"avg_pm25\"], \"\"))"
+          },
+          "x": {"scale": "x", "field": "country"},
+          "width": {"signal": "max(0.25, bandwidth('x'))"},
+          "y": {"scale": "y", "field": "avg_pm25_end"},
+          "y2": {"scale": "y", "field": "avg_pm25_start"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {"data": "source_0", "field": "country", "sort": true},
+      "range": {"step": {"signal": "x_step"}},
+      "paddingInner": 0.1,
+      "paddingOuter": 0.05
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {
+        "data": "source_0",
+        "fields": ["avg_pm25_start", "avg_pm25_end"]
+      },
+      "range": [{"signal": "height"}, 0],
+      "nice": true,
+      "zero": true
+    },
+    {
+      "name": "color",
+      "type": "linear",
+      "domain": {"data": "source_0", "field": "avg_pm25"},
+      "range": {"scheme": "greens"},
+      "interpolate": "hcl",
+      "zero": false
+    }
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "gridScale": "x",
+      "grid": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Country",
+      "labelAngle": 315,
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelAlign": "right",
+      "labelBaseline": "top",
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "Average PM2.5",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    }
+  ],
+  "legends": [
+    {
+      "title": "Average PM2.5",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 16,
+      "fill": "color",
+      "gradientLength": {"signal": "clamp(height, 64, 200)"}
+    }
+  ],
+  "config": {}
+}

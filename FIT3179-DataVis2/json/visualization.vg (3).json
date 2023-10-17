@@ -1,0 +1,147 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A scatter plot showing the relationship between wind speed and temperature.",
+  "background": "white",
+  "padding": 5,
+  "width": 200,
+  "height": 200,
+  "title": {
+    "text": "Wind Speed vs. Temperature",
+    "fontSize": 20,
+    "font": "Helvetica Neue",
+    "frame": "group"
+  },
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/Iwyn-j/FIT3179/main/GlobalWeatherRepository.csv",
+      "format": {"type": "csv", "delimiter": ","},
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"temperature_celsius\"]) && isFinite(+datum[\"temperature_celsius\"]) && isValid(datum[\"wind_kph\"]) && isFinite(+datum[\"wind_kph\"])"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "name": "marks",
+      "type": "symbol",
+      "style": ["point"],
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "opacity": {"value": 0.7},
+          "fill": {"value": "transparent"},
+          "stroke": {"scale": "color", "field": "country"},
+          "tooltip": {
+            "signal": "{\"temperature_celsius\": format(datum[\"temperature_celsius\"], \"\"), \"wind_kph\": format(datum[\"wind_kph\"], \"\"), \"country\": isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]}"
+          },
+          "ariaRoleDescription": {"value": "point"},
+          "description": {
+            "signal": "\"temperature_celsius: \" + (format(datum[\"temperature_celsius\"], \"\")) + \"; wind_kph: \" + (format(datum[\"wind_kph\"], \"\")) + \"; country: \" + (isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"])"
+          },
+          "x": {"scale": "x", "field": "temperature_celsius"},
+          "y": {"scale": "y", "field": "wind_kph"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "linear",
+      "domain": {"data": "source_0", "field": "temperature_celsius"},
+      "range": [0, {"signal": "width"}],
+      "nice": true,
+      "zero": true
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {"data": "source_0", "field": "wind_kph"},
+      "range": [{"signal": "height"}, 0],
+      "nice": true,
+      "zero": true
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": {"data": "source_0", "field": "country", "sort": true},
+      "range": {"scheme": "tableau10"}
+    }
+  ],
+  "axes": [
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "gridScale": "y",
+      "grid": true,
+      "tickCount": {"signal": "ceil(width/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "gridScale": "x",
+      "grid": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Temperature (°C)",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelFlush": true,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(width/40)"},
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "Wind Speed (kph)",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    }
+  ],
+  "legends": [
+    {
+      "title": "Country",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 16,
+      "stroke": "color",
+      "symbolType": "circle",
+      "encode": {
+        "symbols": {
+          "update": {
+            "fill": {"value": "transparent"},
+            "opacity": {"value": 0.7}
+          }
+        }
+      }
+    }
+  ],
+  "config": {}
+}

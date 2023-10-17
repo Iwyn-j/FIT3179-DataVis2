@@ -1,0 +1,139 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A heatmap showing humidity levels across different countries.",
+  "background": "white",
+  "padding": 5,
+  "height": 200,
+  "title": {
+    "text": "Humidity Levels by Country",
+    "fontSize": 20,
+    "font": "Helvetica Neue",
+    "frame": "group"
+  },
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/Iwyn-j/FIT3179/main/GlobalWeatherRepository.csv",
+      "format": {"type": "csv", "delimiter": ","},
+      "transform": [
+        {
+          "type": "extent",
+          "field": "humidity",
+          "signal": "bin_maxbins_10_humidity_extent"
+        },
+        {
+          "type": "bin",
+          "field": "humidity",
+          "as": ["bin_maxbins_10_humidity", "bin_maxbins_10_humidity_end"],
+          "signal": "bin_maxbins_10_humidity_bins",
+          "extent": {"signal": "bin_maxbins_10_humidity_extent"},
+          "maxbins": 10
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"humidity\"]) && isFinite(+datum[\"humidity\"])"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {"name": "x_step", "value": 20},
+    {"name": "width", "update": "bandspace(domain('x').length, 0, 0) * x_step"}
+  ],
+  "marks": [
+    {
+      "name": "marks",
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "fill": {"scale": "color", "field": "humidity"},
+          "description": {
+            "signal": "\"country: \" + (isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]) + \"; humidity (binned): \" + (!isValid(datum[\"bin_maxbins_10_humidity\"]) || !isFinite(+datum[\"bin_maxbins_10_humidity\"]) ? \"null\" : format(datum[\"bin_maxbins_10_humidity\"], \"\") + \" – \" + format(datum[\"bin_maxbins_10_humidity_end\"], \"\")) + \"; humidity: \" + (format(datum[\"humidity\"], \"\"))"
+          },
+          "x": {"scale": "x", "field": "country"},
+          "width": {"signal": "max(0.25, bandwidth('x'))"},
+          "y2": {
+            "scale": "y",
+            "field": "bin_maxbins_10_humidity",
+            "offset": {
+              "signal": "0.5 + (abs(scale(\"y\", datum[\"bin_maxbins_10_humidity_end\"]) - scale(\"y\", datum[\"bin_maxbins_10_humidity\"])) < 0.25 ? 0.5 * (0.25 - (abs(scale(\"y\", datum[\"bin_maxbins_10_humidity_end\"]) - scale(\"y\", datum[\"bin_maxbins_10_humidity\"])))) : 0)"
+            }
+          },
+          "y": {
+            "scale": "y",
+            "field": "bin_maxbins_10_humidity_end",
+            "offset": {
+              "signal": "0.5 + (abs(scale(\"y\", datum[\"bin_maxbins_10_humidity_end\"]) - scale(\"y\", datum[\"bin_maxbins_10_humidity\"])) < 0.25 ? -0.5 * (0.25 - (abs(scale(\"y\", datum[\"bin_maxbins_10_humidity_end\"]) - scale(\"y\", datum[\"bin_maxbins_10_humidity\"])))) : 0)"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {"data": "source_0", "field": "country", "sort": true},
+      "range": {"step": {"signal": "x_step"}},
+      "paddingInner": 0,
+      "paddingOuter": 0
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {
+        "signal": "[bin_maxbins_10_humidity_bins.start, bin_maxbins_10_humidity_bins.stop]"
+      },
+      "range": [{"signal": "height"}, 0],
+      "bins": {"signal": "bin_maxbins_10_humidity_bins"},
+      "zero": false
+    },
+    {
+      "name": "color",
+      "type": "linear",
+      "domain": {"data": "source_0", "field": "humidity"},
+      "range": {"scheme": "bluegreen"},
+      "interpolate": "hcl",
+      "zero": false
+    }
+  ],
+  "axes": [
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Country",
+      "labelAngle": 315,
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelAlign": "right",
+      "labelBaseline": "top",
+      "zindex": 1
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "Humidity (%)",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/10)"},
+      "zindex": 1
+    }
+  ],
+  "legends": [
+    {
+      "title": "Count",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 16,
+      "fill": "color",
+      "gradientLength": {"signal": "clamp(height, 64, 200)"}
+    }
+  ],
+  "config": {}
+}

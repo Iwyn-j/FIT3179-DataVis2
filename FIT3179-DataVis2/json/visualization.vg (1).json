@@ -1,0 +1,151 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A bar chart that shows the average temperature by country.",
+  "background": "white",
+  "padding": 5,
+  "height": 200,
+  "title": {
+    "text": "Average Temperature by Country",
+    "fontSize": 20,
+    "font": "Helvetica Neue",
+    "frame": "group"
+  },
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/Iwyn-j/FIT3179/main/GlobalWeatherRepository.csv",
+      "format": {"type": "csv", "delimiter": ","},
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": ["country"],
+          "ops": ["mean"],
+          "fields": ["temperature_celsius"],
+          "as": ["avg_temp"]
+        },
+        {
+          "type": "stack",
+          "groupby": ["country"],
+          "field": "avg_temp",
+          "sort": {"field": ["avg_temp"], "order": ["descending"]},
+          "as": ["avg_temp_start", "avg_temp_end"],
+          "offset": "zero"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"avg_temp\"]) && isFinite(+datum[\"avg_temp\"])"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {"name": "x_step", "value": 20},
+    {
+      "name": "width",
+      "update": "bandspace(domain('x').length, 0.1, 0.05) * x_step"
+    }
+  ],
+  "marks": [
+    {
+      "name": "marks",
+      "type": "rect",
+      "style": ["bar"],
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "fill": {"scale": "color", "field": "avg_temp"},
+          "tooltip": {
+            "signal": "{\"country\": isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"], \"avg_temp\": format(datum[\"avg_temp\"], \"\")}"
+          },
+          "ariaRoleDescription": {"value": "bar"},
+          "description": {
+            "signal": "\"country: \" + (isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]) + \"; avg_temp: \" + (format(datum[\"avg_temp\"], \"\"))"
+          },
+          "x": {"scale": "x", "field": "country"},
+          "width": {"signal": "max(0.25, bandwidth('x'))"},
+          "y": {"scale": "y", "field": "avg_temp_end"},
+          "y2": {"scale": "y", "field": "avg_temp_start"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {"data": "source_0", "field": "country", "sort": true},
+      "range": {"step": {"signal": "x_step"}},
+      "paddingInner": 0.1,
+      "paddingOuter": 0.05
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {
+        "data": "source_0",
+        "fields": ["avg_temp_start", "avg_temp_end"]
+      },
+      "range": [{"signal": "height"}, 0],
+      "nice": true,
+      "zero": true
+    },
+    {
+      "name": "color",
+      "type": "linear",
+      "domain": {"data": "source_0", "field": "avg_temp"},
+      "range": "ramp",
+      "interpolate": "hcl",
+      "zero": false
+    }
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "gridScale": "x",
+      "grid": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Country",
+      "labelAngle": 315,
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelAlign": "right",
+      "labelBaseline": "top",
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "Average Temperature (°C)",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    }
+  ],
+  "legends": [
+    {
+      "title": "Average Temperature (°C)",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 16,
+      "fill": "color",
+      "gradientLength": {"signal": "clamp(height, 64, 200)"}
+    }
+  ],
+  "config": {}
+}

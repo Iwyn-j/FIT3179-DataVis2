@@ -1,0 +1,321 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A box plot that shows the distribution of UV Index by country.",
+  "background": "white",
+  "padding": 5,
+  "height": 200,
+  "title": {
+    "text": "UV Index Distribution by Country",
+    "fontSize": 20,
+    "font": "Helvetica Neue",
+    "frame": "group"
+  },
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_0",
+      "url": "https://raw.githubusercontent.com/Iwyn-j/FIT3179/main/GlobalWeatherRepository.csv",
+      "format": {"type": "csv", "delimiter": ","}
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "joinaggregate",
+          "as": ["lower_box_uv_index", "upper_box_uv_index"],
+          "ops": ["q1", "q3"],
+          "fields": ["uv_index", "uv_index"],
+          "groupby": ["country"]
+        }
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "data_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "(datum[\"uv_index\"] < datum[\"lower_box_uv_index\"] - 1.5 * (datum[\"upper_box_uv_index\"] - datum[\"lower_box_uv_index\"])) || (datum[\"uv_index\"] > datum[\"upper_box_uv_index\"] + 1.5 * (datum[\"upper_box_uv_index\"] - datum[\"lower_box_uv_index\"]))"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"uv_index\"]) && isFinite(+datum[\"uv_index\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_2",
+      "source": "data_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "(datum[\"lower_box_uv_index\"] - 1.5 * (datum[\"upper_box_uv_index\"] - datum[\"lower_box_uv_index\"]) <= datum[\"uv_index\"]) && (datum[\"uv_index\"] <= datum[\"upper_box_uv_index\"] + 1.5 * (datum[\"upper_box_uv_index\"] - datum[\"lower_box_uv_index\"]))"
+        },
+        {
+          "type": "aggregate",
+          "groupby": ["country"],
+          "ops": ["min", "max", "min", "max"],
+          "fields": [
+            "uv_index",
+            "uv_index",
+            "lower_box_uv_index",
+            "upper_box_uv_index"
+          ],
+          "as": [
+            "lower_whisker_uv_index",
+            "upper_whisker_uv_index",
+            "lower_box_uv_index",
+            "upper_box_uv_index"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "data_3",
+      "source": "data_2",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"lower_whisker_uv_index\"]) && isFinite(+datum[\"lower_whisker_uv_index\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_4",
+      "source": "data_2",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"upper_box_uv_index\"]) && isFinite(+datum[\"upper_box_uv_index\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_5",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": ["country"],
+          "ops": ["q1", "q3", "median", "min", "max"],
+          "fields": [
+            "uv_index",
+            "uv_index",
+            "uv_index",
+            "uv_index",
+            "uv_index"
+          ],
+          "as": [
+            "lower_box_uv_index",
+            "upper_box_uv_index",
+            "mid_box_uv_index",
+            "min_uv_index",
+            "max_uv_index"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "data_6",
+      "source": "data_5",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"lower_box_uv_index\"]) && isFinite(+datum[\"lower_box_uv_index\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_7",
+      "source": "data_5",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"mid_box_uv_index\"]) && isFinite(+datum[\"mid_box_uv_index\"])"
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {"name": "x_step", "value": 20},
+    {"name": "width", "update": "bandspace(domain('x').length, 0, 0) * x_step"}
+  ],
+  "marks": [
+    {
+      "name": "layer_0_layer_0_marks",
+      "type": "symbol",
+      "style": ["point", "boxplot-outliers"],
+      "from": {"data": "data_1"},
+      "encode": {
+        "update": {
+          "opacity": {"value": 0.7},
+          "fill": {"value": "transparent"},
+          "stroke": {"value": "#4c78a8"},
+          "ariaRoleDescription": {"value": "point"},
+          "description": {
+            "signal": "\"country: \" + (isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]) + \"; uv_index: \" + (format(datum[\"uv_index\"], \"\"))"
+          },
+          "x": {"scale": "x", "field": "country", "band": 0.5},
+          "y": {"scale": "y", "field": "uv_index"}
+        }
+      }
+    },
+    {
+      "name": "layer_0_layer_1_layer_0_marks",
+      "type": "rule",
+      "style": ["rule", "boxplot-rule"],
+      "aria": false,
+      "from": {"data": "data_3"},
+      "encode": {
+        "update": {
+          "stroke": {"value": "black"},
+          "tooltip": {
+            "signal": "{\"Upper Whisker of uv_index\": format(datum[\"upper_whisker_uv_index\"], \"\"), \"Lower Whisker of uv_index\": format(datum[\"lower_whisker_uv_index\"], \"\"), \"country\": isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]}"
+          },
+          "x": {"scale": "x", "field": "country", "band": 0.5},
+          "y": {"scale": "y", "field": "lower_whisker_uv_index"},
+          "y2": {"scale": "y", "field": "lower_box_uv_index"}
+        }
+      }
+    },
+    {
+      "name": "layer_0_layer_1_layer_1_marks",
+      "type": "rule",
+      "style": ["rule", "boxplot-rule"],
+      "aria": false,
+      "from": {"data": "data_4"},
+      "encode": {
+        "update": {
+          "stroke": {"value": "black"},
+          "tooltip": {
+            "signal": "{\"Upper Whisker of uv_index\": format(datum[\"upper_whisker_uv_index\"], \"\"), \"Lower Whisker of uv_index\": format(datum[\"lower_whisker_uv_index\"], \"\"), \"country\": isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]}"
+          },
+          "x": {"scale": "x", "field": "country", "band": 0.5},
+          "y": {"scale": "y", "field": "upper_box_uv_index"},
+          "y2": {"scale": "y", "field": "upper_whisker_uv_index"}
+        }
+      }
+    },
+    {
+      "name": "layer_1_layer_0_marks",
+      "type": "rect",
+      "style": ["bar", "boxplot-box"],
+      "from": {"data": "data_6"},
+      "encode": {
+        "update": {
+          "ariaRoleDescription": {"value": "box"},
+          "fill": {"value": "#4c78a8"},
+          "tooltip": {
+            "signal": "{\"Max of uv_index\": format(datum[\"max_uv_index\"], \"\"), \"Q3 of uv_index\": format(datum[\"upper_box_uv_index\"], \"\"), \"Median of uv_index\": format(datum[\"mid_box_uv_index\"], \"\"), \"Q1 of uv_index\": format(datum[\"lower_box_uv_index\"], \"\"), \"Min of uv_index\": format(datum[\"min_uv_index\"], \"\"), \"country\": isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]}"
+          },
+          "description": {
+            "signal": "\"country: \" + (isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]) + \"; uv_index: \" + (format(datum[\"lower_box_uv_index\"], \"\")) + \"; upper_box_uv_index: \" + (format(datum[\"upper_box_uv_index\"], \"\")) + \"; Max of uv_index: \" + (format(datum[\"max_uv_index\"], \"\")) + \"; Q3 of uv_index: \" + (format(datum[\"upper_box_uv_index\"], \"\")) + \"; Median of uv_index: \" + (format(datum[\"mid_box_uv_index\"], \"\")) + \"; Q1 of uv_index: \" + (format(datum[\"lower_box_uv_index\"], \"\")) + \"; Min of uv_index: \" + (format(datum[\"min_uv_index\"], \"\"))"
+          },
+          "xc": {"scale": "x", "field": "country", "band": 0.5},
+          "width": {"value": 14},
+          "y": {"scale": "y", "field": "lower_box_uv_index"},
+          "y2": {"scale": "y", "field": "upper_box_uv_index"}
+        }
+      }
+    },
+    {
+      "name": "layer_1_layer_1_marks",
+      "type": "rect",
+      "style": ["tick", "boxplot-median"],
+      "aria": false,
+      "from": {"data": "data_7"},
+      "encode": {
+        "update": {
+          "opacity": {"value": 0.7},
+          "fill": {"value": "white"},
+          "tooltip": {
+            "signal": "{\"Max of uv_index\": format(datum[\"max_uv_index\"], \"\"), \"Q3 of uv_index\": format(datum[\"upper_box_uv_index\"], \"\"), \"Median of uv_index\": format(datum[\"mid_box_uv_index\"], \"\"), \"Q1 of uv_index\": format(datum[\"lower_box_uv_index\"], \"\"), \"Min of uv_index\": format(datum[\"min_uv_index\"], \"\"), \"country\": isValid(datum[\"country\"]) ? datum[\"country\"] : \"\"+datum[\"country\"]}"
+          },
+          "xc": {"scale": "x", "field": "country", "band": 0.5},
+          "yc": {"scale": "y", "field": "mid_box_uv_index"},
+          "width": {"value": 14},
+          "height": {"value": 1}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {
+        "fields": [
+          {"data": "data_1", "field": "country"},
+          {"data": "data_3", "field": "country"},
+          {"data": "data_4", "field": "country"},
+          {"data": "data_6", "field": "country"},
+          {"data": "data_7", "field": "country"}
+        ],
+        "sort": true
+      },
+      "range": {"step": {"signal": "x_step"}},
+      "paddingInner": 0,
+      "paddingOuter": 0
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {
+        "fields": [
+          {"data": "data_1", "field": "uv_index"},
+          {"data": "data_3", "field": "lower_whisker_uv_index"},
+          {"data": "data_3", "field": "lower_box_uv_index"},
+          {"data": "data_4", "field": "upper_box_uv_index"},
+          {"data": "data_4", "field": "upper_whisker_uv_index"},
+          {"data": "data_6", "field": "lower_box_uv_index"},
+          {"data": "data_6", "field": "upper_box_uv_index"},
+          {"data": "data_7", "field": "mid_box_uv_index"}
+        ]
+      },
+      "range": [{"signal": "height"}, 0],
+      "nice": true,
+      "zero": true
+    }
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "gridScale": "x",
+      "grid": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Country",
+      "labelAngle": 315,
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelAlign": "right",
+      "labelBaseline": "top",
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "uv_index, UV Index, UV Index",
+      "titleFont": "Helvetica Neue",
+      "titleFontSize": 18,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    }
+  ],
+  "config": {}
+}
